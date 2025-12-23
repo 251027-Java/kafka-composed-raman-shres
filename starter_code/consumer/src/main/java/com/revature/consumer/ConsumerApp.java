@@ -6,6 +6,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -14,16 +15,32 @@ import java.util.Map;
 @RequestMapping("/api/messages")
 public class ConsumerApp {
 
-    private final List<String> receivedMessages = new ArrayList<>();
+    private final List<String> receivedMessages = Collections.synchronizedList(new ArrayList<>());
 
     public static void main(String[] args) {
         SpringApplication.run(ConsumerApp.class, args);
     }
 
-    // TODO: Add @KafkaListener annotation
-    // @KafkaListener(topics = "messages", groupId = "message-consumers")
+    @KafkaListener(topics = "messages", groupId = "message-consumers")
     public void listen(String message) {
-        System.out.println("Received message: " + message);
+        System.out.println("Received [Message]: " + message);
+        receivedMessages.add("MESSAGE: " + message);
+    }
+
+    @KafkaListener(topics = "orders", groupId = "message-consumers")
+    public void listenOrders(String message) {
+        System.out.println("Received [Order]: " + message);
+        receivedMessages.add("ORDER: " + message);
+    }
+
+    @KafkaListener(topics = "notifications", groupId = "message-consumers")
+    public void listenNotifications(String message) {
+        System.out.println("Received [Notification]: " + message);
+        receivedMessages.add("NOTIFICATION: " + message);
+    }
+
+    @KafkaListener(topics = {"messages", "orders", "notifications"}, groupId = "message-consumers")
+    public void listenAll(String message) {
         receivedMessages.add(message);
     }
 
